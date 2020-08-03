@@ -1,14 +1,51 @@
 <template>
   <div>
-  <div class="text center" v-if="$auth.isAuthenticated">
-    <h1 class="mb-4">Days Since</h1>
-    Hello
-  </div>
+    <h1 class="mb-4 txt-centered">Days Since</h1>
+    <v-list shaped>
+      <v-list-item-group
+        v-model="model"
+        multiple
+      >
+        <template v-for="(item, i) in items">
+          <v-divider
+            v-if="!item"
+            :key="`divider-${i}`"
+          ></v-divider>
+
+          <v-list-item
+            v-else
+            :key="`item-${i}`"
+            :value="item"
+            active-class="deep-navy--text text--accent-4"
+          >
+            <template v-slot:default="{ active, toggle }">
+              <v-list-item-content>
+                <v-list-item-title v-text="item"></v-list-item-title>
+              </v-list-item-content>
+
+              <v-list-item-action>
+                <v-checkbox
+                  :input-value="active"
+                  :true-value="item"
+                  color="deep-gray accent-4"
+                  @click="toggle"
+                ></v-checkbox>
+              </v-list-item-action>
+            </template>
+          </v-list-item>
+        </template>
+      </v-list-item-group>
+    </v-list>
+
   </div>
 </template>
 
 <script>
 export default {
-  name: "List"
+  name: "List",
+  data: () => ({
+    items: ['item one', 'item two'],
+    model : ['X'],
+  })
 };
 </script>

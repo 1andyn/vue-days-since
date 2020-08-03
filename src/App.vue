@@ -1,4 +1,6 @@
 <template>
+<v-app>
+  <v-main>
   <div id="app" class="d-flex flex-column h-100">
     <nav-bar />
     <div class="container flex-grow-1">
@@ -14,6 +16,8 @@
       </p>
     </footer>
   </div>
+  </v-main>
+</v-app>
 </template>
 
 <script>
