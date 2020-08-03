@@ -2,7 +2,6 @@
   <div class="nav-container mb-3">
     <nav class="navbar navbar-expand-md navbar-light bg-light">
       <div class="container">
-        <div class="navbar-brand logo"></div>
         <button
           class="navbar-toggler"
           type="button"
@@ -17,8 +16,14 @@
 
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav mr-auto">
-            <li class="nav-item">
+            <li class="nav-item" v-if="!$auth.isAuthenticated">
               <router-link to="/" class="nav-link">Home</router-link>
+            </li>
+            <li class="nav-item" v-if="$auth.isAuthenticated">
+              <router-link to="/main" class="nav-link">Main</router-link>
+            </li>
+            <li class="nav-item" v-if="$auth.isAuthenticated">
+              <router-link to="/settings" class="nav-link">Settings</router-link>
             </li>
           </ul>
           <ul class="navbar-nav d-none d-md-block">
@@ -98,6 +103,7 @@ export default {
   methods: {
     login() {
       this.$auth.loginWithRedirect();
+      this.$router.push({ path: "/main" });
     },
     logout() {
       this.$auth.logout();
