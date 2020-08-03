@@ -1,20 +1,17 @@
+const webpack = require("webpack");
+
 module.exports = {
-  "devServer": {
-    "port": 3000
+  devServer: {
+    port: 3000
   },
-  "configureWebpack": {
-    "plugins": [
-      {
-        "definitions": {
-          "$": "jquery",
-          "jquery": "jquery",
-          "window.jQuery": "jquery",
-          "jQuery": "jquery"
-        }
-      }
+  configureWebpack: {
+    plugins: [
+      new webpack.ProvidePlugin({
+        $: "jquery",
+        jquery: "jquery",
+        "window.jQuery": "jquery",
+        jQuery: "jquery"
+      })
     ]
-  },
-  "transpileDependencies": [
-    "vuetify"
-  ]
-}
+  }
+};
