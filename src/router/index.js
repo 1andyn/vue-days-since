@@ -5,6 +5,10 @@ import List from "../views/List.vue";
 import Profile from "../views/Profile.vue";
 import { authGuard } from "../auth";
 
+
+require('@/assets/css/style.css');
+
+
 Vue.use(Router);
 
 const router = new Router({
