@@ -9,6 +9,7 @@ import { faLink, faUser, faPowerOff } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { domain, clientId } from "../auth_config.json";
 import vuetify from './plugins/vuetify';
+import 'material-design-icons-iconfont/dist/material-design-icons.css';
 
 Vue.config.productionTip = false;
 
