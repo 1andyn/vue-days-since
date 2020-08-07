@@ -20,3 +20,8 @@
   </div>
 </template>
 
+<style scoped>
+  .v-application code{
+    background-color: #272357;
+  }
+</style>
