@@ -3,6 +3,7 @@ import Router from "vue-router";
 import Home from "../views/Home.vue";
 import List from "../views/List.vue";
 import Profile from "../views/Profile.vue";
+import Settings from "../views/Settings.vue";
 import { authGuard } from "../auth";
 
 
@@ -30,6 +31,12 @@ const router = new Router({
       path: "/profile",
       name: "profile",
       component: Profile,
+      beforeEnter: authGuard
+    },
+    {
+      path: "/settings",
+      name: "settings",
+      component: Settings,
       beforeEnter: authGuard
     }
   ]
