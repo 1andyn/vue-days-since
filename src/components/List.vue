@@ -23,6 +23,7 @@
             <v-card>
               <v-card-text>
                 <v-container>
+                  <v-row><p></p></v-row>
                   <v-row>
                     <v-col cols="16" sm="8" md="6">
                       <v-text-field :rules="rules"  v-model="editedItem.strEvent" 
