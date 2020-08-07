@@ -10,6 +10,7 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { domain, clientId } from "../auth_config.json";
 import vuetify from './plugins/vuetify';
 import 'material-design-icons-iconfont/dist/material-design-icons.css';
+import UUID from "vue-uuid";
 
 Vue.config.productionTip = false;
 
@@ -23,7 +24,7 @@ Vue.use(Auth0Plugin, {
         : window.location.pathname
     );
   }
-});
+}, UUID);
 
 Vue.directive("highlightjs", HighlightJs);
 
