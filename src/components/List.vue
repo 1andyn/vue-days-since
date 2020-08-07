@@ -1,8 +1,13 @@
 <template>
 <body>
   <div>
-    <v-data-table :headers="headers" :items="myevents" :sort-by="['strEvent', 'dtmVal']" 
-                  class="elevation-1" :sortDesc = "[false, true]">
+    <v-data-table
+      :headers="headers"
+      :items="myevents"
+      :sort-by="['strEvent', 'dtmVal']"
+      class="elevation-1"
+      :sortDesc="[false, true]"
+    >
       <template v-slot:item.intElapsed="{ item }">
         <v-chip :color="getColor(item.intElapsed)" dark>{{ item.intElapsed }}</v-chip>
       </template>
@@ -13,47 +18,77 @@
           <v-spacer></v-spacer>
           <v-dialog v-model="dialog" max-width="800px">
             <template v-slot:activator="{ on, attrs }">
-              <v-btn color="#e91e63" dark class="mb-2 ds-btn"
-              width="150"
-              @click="deleteAll()">Delete All</v-btn>
-              <v-btn color="primary" dark class="mb-2 ds-btn" 
-              width="150"
-              v-bind="attrs" v-on="on">New Item</v-btn>
+              <v-btn
+                color="#e91e63"
+                dark
+                class="mb-2 ds-btn"
+                width="150"
+                @click="delete_diag = true"
+              >Delete All</v-btn>
+              <v-dialog v-model="delete_diag" max-width="290">
+                <v-card>
+                  <v-card-title class="headline">Delete all events</v-card-title>
+                  <v-card-text>Are you sure you want to delete everything?</v-card-text>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="red darken-1" text @click="delete_diag = false">No</v-btn>
+                    <v-btn color="green darken-1" text @click="deleteAll()">Yes!</v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+              <v-btn
+                color="primary"
+                dark
+                class="mb-2 ds-btn"
+                width="150"
+                v-bind="attrs"
+                v-on="on"
+              >New Item</v-btn>
             </template>
             <v-card>
               <v-card-text>
                 <v-container>
-                  <v-row><p></p></v-row>
+                  <v-row>
+                    <p></p>
+                  </v-row>
                   <v-row>
                     <v-col cols="16" sm="8" md="6">
-                      <v-text-field :rules="rules"  v-model="editedItem.strEvent" 
-                          hint = "Andy's Birthday"
-                          prepend-inner-icon="mdi-emoticon"
-                          outlined label="Event Name"></v-text-field>
+                      <v-text-field
+                        :rules="rules"
+                        v-model="editedItem.strEvent"
+                        hint="Andy's Birthday"
+                        prepend-inner-icon="mdi-emoticon"
+                        outlined
+                        label="Event Name"
+                      ></v-text-field>
                     </v-col>
                     <v-col cols="14" sm="8" md="6">
                       <v-menu
-                              v-model="datepicker"
-                                :close-on-content-click="false"
-                                transition="scale-transition"
-                                offset-y
-                                max-width="290px"
-                                min-width="290px"
-                              >
-                                <template v-slot:activator="{ on, attrs }">
-                                  <v-text-field
-                                    v-model="editedItem.dtmVal"
-                                    label="Date of Event"
-                                    hint="MM/DD/YYYY format"
-                                    persistent-hint
-                                    prepend-icon="event"
-                                    readonly
-                                    v-bind="attrs"
-                                    v-on="on"
-                                  ></v-text-field>
-                                </template>
-                                <v-date-picker v-model="editedItem.dtmVal" no-title @input="datepicker = false"></v-date-picker>
-                              </v-menu>
+                        v-model="datepicker"
+                        :close-on-content-click="false"
+                        transition="scale-transition"
+                        offset-y
+                        max-width="290px"
+                        min-width="290px"
+                      >
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-text-field
+                            v-model="editedItem.dtmVal"
+                            label="Date of Event"
+                            hint="MM/DD/YYYY format"
+                            persistent-hint
+                            prepend-icon="event"
+                            readonly
+                            v-bind="attrs"
+                            v-on="on"
+                          ></v-text-field>
+                        </template>
+                        <v-date-picker
+                          v-model="editedItem.dtmVal"
+                          no-title
+                          @input="datepicker = false"
+                        ></v-date-picker>
+                      </v-menu>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -72,7 +107,18 @@
       <!-- Buttons for editing -->
       <template v-slot:item.actions="{ item }">
         <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
-        <v-icon small @click="deleteItem(item)">mdi-delete</v-icon>
+        <v-icon small @click="delete_diag_sp=true">mdi-delete</v-icon>
+        <v-dialog v-model="delete_diag_sp" max-width="290">
+                <v-card>
+                  <v-card-title class="headline">Delete this event</v-card-title>
+                  <v-card-text>Are you sure you want to delete this item?</v-card-text>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="red darken-1" text @click="delete_diag_sp = false">No</v-btn>
+                    <v-btn color="green darken-1" text @click="deleteItem(item)">Yes!</v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
       </template>
       <!-- Buttons for editing -->
     </v-data-table>
@@ -81,39 +127,47 @@
 </template>
 
 <script>
+import { uuid } from 'vue-uuid'
 export default {
   data: () => ({
+    //dialogs for deletion
+    delete_diag_sp: false,
+    delete_diag: false,
+
+    //dialog window for adding/editing
     dialog: false,
+
+    //interval for elapsed
     interval: "day",
 
     //used to indicate if the datepicker should be open or closed
     datepicker: false,
 
     //Required Rules
-    rules: [ v => !!v || 'Required',],
+    rules: [(v) => !!v || "Required"],
 
-    //Headers for Tables 
+    //Headers for Tables
     headers: [
       {
         text: "Event",
         align: "start",
         value: "strEvent",
-        width: 500
+        width: 500,
       },
       { text: "Date", value: "dtmVal" },
-      { text: "Elapsed", value: "intElapsed" , divider: true },
-      { text: "Actions", value: "actions", sortable: false , 
-      align: "center"},
+      { text: "Elapsed", value: "intElapsed", divider: true },
+      { text: "Actions", value: "actions", sortable: false, align: "center" },
     ],
 
     //Container for Events
     myevents: [],
 
-    //Index for Item being edited / modified 
+    //Index for Item being edited / modified
     editedIndex: -1,
 
     //Edited Item Props
     editedItem: {
+      strUID: "",
       strEvent: "",
       dtmVal: new Date().toISOString().substr(0, 10),
       intElapsed: 0,
@@ -121,13 +175,14 @@ export default {
 
     //Default Item (Creating New)
     defaultItem: {
+      strUID: "",
       strEvent: "My event",
       dtmVal: new Date().toISOString().substr(0, 10), //default to today
       intElapsed: 0,
     },
   }),
 
-   computed: {
+  computed: {
     formTitle() {
       return this.editedIndex === -1 ? "New Item" : "Edit Item";
     },
@@ -147,29 +202,35 @@ export default {
     initialize() {
       this.myevents = [
         {
+          strUID: uuid.v1(),
           strEvent: "Job 1 Submit",
           dtmVal: "2019-01-30",
           intElapsed: 100,
         },
         {
+          strUID: uuid.v1(),
           strEvent: "Job 1 Reject",
           dtmVal: "2019-01-31",
           intElapsed: 30,
         },
         {
+          strUID: uuid.v1(),
           strEvent: "Job 2 Other",
           dtmVal: "2020-01-25",
           intElapsed: 5,
         },
       ];
 
-    this.recalculateElapsed()
+      this.recalculateElapsed();
+
+      // eslint-disable-next-line
+      console.log(this.myevents);
 
     },
 
     //recalculates all elapsed
     recalculateElapsed() {
-      for(var x = 0; x < this.myevents.length; x++) {
+      for (var x = 0; x < this.myevents.length; x++) {
         this.myevents[x].intElapsed = this.timeElapsed(this.myevents[x].dtmVal);
       }
     },
@@ -177,17 +238,12 @@ export default {
     //calculates time elapsed
     timeElapsed(date) {
       var now = new Date();
-      var pdate =  new Date(date);
+      var pdate = new Date(date);
       var diff = now.getTime() - pdate.getTime();
 
-      if(this.interval === "day")
-        return parseInt(diff/86400000);
-
-      if(this.interval === "week")
-        return parseInt(diff/(86400000 * 7));
-
-      if(this.interval === "month")
-        return parseInt(diff/(86400000 * 30));
+      if (this.interval === "day") return parseInt(diff / 86400000);
+      if (this.interval === "week") return parseInt(diff / (86400000 * 7));
+      if (this.interval === "month") return parseInt(diff / (86400000 * 30));
     },
 
     //edits selected item
@@ -200,18 +256,18 @@ export default {
     //deletes selected item
     deleteItem(item) {
       const index = this.myevents.indexOf(item);
-      confirm("Are you sure you want to delete this item?") &&
-        this.myevents.splice(index, 1);
+      this.myevents.splice(index, 1);
+      this.delete_diag_sp = false;
     },
 
     //deletes all items
     deleteAll() {
-      confirm("Are you sure you want to delete *ALL* item?") &&
         this.clearEvents();
+        this.delete_diag = false;
     },
 
     //clears event container
-    clearEvents()  {
+    clearEvents() {
       this.myevents = [];
     },
 
@@ -223,30 +279,29 @@ export default {
         this.editedIndex = -1;
       });
     },
-    
+
     //clicking save when new or editing
     save() {
-      if (this.editedItem.strEvent === "")
-        return; //do nothing if event name isn't filled out
+      if (this.editedItem.strEvent === "") return; //do nothing if event name isn't filled out
 
       //calculate date diff
-        this.editedItem.intElapsed = this.timeElapsed(this.editedItem.dtmVal);
+      this.editedItem.intElapsed = this.timeElapsed(this.editedItem.dtmVal);
 
       if (this.editedIndex > -1) {
         Object.assign(this.myevents[this.editedIndex], this.editedItem);
       } else {
+        this.editedItem.strUID = uuid.v1(); //generate a unique ID
         this.myevents.push(this.editedItem);
       }
       this.close();
     },
 
     //color tagging for time elapsed
-    getColor (elapse) {
-        if (elapse > 30) return 'red'
-        else if (elapse > 14) return 'orange'
-        else return 'green'
+    getColor(elapse) {
+      if (elapse > 30) return "red";
+      else if (elapse > 14) return "orange";
+      else return "green";
     },
-
   },
 };
 </script>
