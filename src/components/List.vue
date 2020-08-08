@@ -4,7 +4,7 @@
     <v-data-table
       :headers="headers"
       :items="myevents"
-      :sort-by="['strEvent', 'dtmVal']"
+      :sort-by="['strEvent', 'dtmDate']"
       class="elevation-1"
       :sortDesc="[false, true]"
     >
@@ -73,7 +73,7 @@
                       >
                         <template v-slot:activator="{ on, attrs }">
                           <v-text-field
-                            v-model="editedItem.dtmVal"
+                            v-model="editedItem.dtmDate"
                             label="Date of Event"
                             hint="MM/DD/YYYY format"
                             persistent-hint
@@ -84,7 +84,7 @@
                           ></v-text-field>
                         </template>
                         <v-date-picker
-                          v-model="editedItem.dtmVal"
+                          v-model="editedItem.dtmDate"
                           no-title
                           @input="datepicker = false"
                         ></v-date-picker>
@@ -154,7 +154,7 @@ export default {
         value: "strEvent",
         width: 500,
       },
-      { text: "Date", value: "dtmVal" },
+      { text: "Date", value: "dtmDate" },
       { text: "Elapsed", value: "intElapsed", divider: true },
       { text: "Actions", value: "actions", sortable: false, align: "center" },
     ],
@@ -167,17 +167,17 @@ export default {
 
     //Edited Item Props
     editedItem: {
-      strUID: "",
+      strId: "",
       strEvent: "",
-      dtmVal: new Date().toISOString().substr(0, 10),
+      dtmDate: new Date().toISOString().substr(0, 10),
       intElapsed: 0,
     },
 
     //Default Item (Creating New)
     defaultItem: {
-      strUID: "",
+      strId: "",
       strEvent: "My event",
-      dtmVal: new Date().toISOString().substr(0, 10), //default to today
+      dtmDate: new Date().toISOString().substr(0, 10), //default to today
       intElapsed: 0,
     },
   }),
@@ -202,36 +202,33 @@ export default {
     initialize() {
       this.myevents = [
         {
-          strUID: uuid.v1(),
+          strId: uuid.v1(),
           strEvent: "Job 1 Submit",
-          dtmVal: "2019-01-30",
+          dtmDate: "2019-01-30",
           intElapsed: 100,
         },
         {
-          strUID: uuid.v1(),
+          strId: uuid.v1(),
           strEvent: "Job 1 Reject",
-          dtmVal: "2019-01-31",
+          dtmDate: "2019-01-31",
           intElapsed: 30,
         },
         {
-          strUID: uuid.v1(),
+          strId: uuid.v1(),
           strEvent: "Job 2 Other",
-          dtmVal: "2020-01-25",
+          dtmDate: "2020-01-25",
           intElapsed: 5,
         },
       ];
 
       this.recalculateElapsed();
 
-      // eslint-disable-next-line
-      console.log(this.myevents);
-
     },
 
     //recalculates all elapsed
     recalculateElapsed() {
       for (var x = 0; x < this.myevents.length; x++) {
-        this.myevents[x].intElapsed = this.timeElapsed(this.myevents[x].dtmVal);
+        this.myevents[x].intElapsed = this.timeElapsed(this.myevents[x].dtmDate);
       }
     },
 
@@ -285,12 +282,12 @@ export default {
       if (this.editedItem.strEvent === "") return; //do nothing if event name isn't filled out
 
       //calculate date diff
-      this.editedItem.intElapsed = this.timeElapsed(this.editedItem.dtmVal);
+      this.editedItem.intElapsed = this.timeElapsed(this.editedItem.dtmDate);
 
       if (this.editedIndex > -1) {
         Object.assign(this.myevents[this.editedIndex], this.editedItem);
       } else {
-        this.editedItem.strUID = uuid.v1(); //generate a unique ID
+        this.editedItem.strId = uuid.v1(); //generate a unique ID
         this.myevents.push(this.editedItem);
       }
       this.close();
