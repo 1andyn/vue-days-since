@@ -8,6 +8,9 @@
       class="elevation-1"
       :sortDesc="[false, true]"
     >
+      <template slot="no-data">
+        <v-alert :value="true" color="white" icon="info">You don't have any days tracked 😔</v-alert>
+      </template>
       <template v-slot:item.intElapsed="{ item }">
         <v-chip :color="getColor(item.intElapsed)" dark>{{ item.intElapsed }}</v-chip>
       </template>
@@ -109,16 +112,16 @@
         <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
         <v-icon small @click="delete_diag_sp=true">mdi-delete</v-icon>
         <v-dialog v-model="delete_diag_sp" max-width="290">
-                <v-card>
-                  <v-card-title class="headline">Delete this event</v-card-title>
-                  <v-card-text>Are you sure you want to delete this item?</v-card-text>
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn color="red darken-1" text @click="delete_diag_sp = false">No</v-btn>
-                    <v-btn color="green darken-1" text @click="deleteItem(item)">Yes!</v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
+          <v-card>
+            <v-card-title class="headline">Delete this event</v-card-title>
+            <v-card-text>Are you sure you want to delete this item?</v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="red darken-1" text @click="delete_diag_sp = false">No</v-btn>
+              <v-btn color="green darken-1" text @click="deleteItem(item)">Yes!</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </template>
       <!-- Buttons for editing -->
     </v-data-table>
@@ -127,7 +130,7 @@
 </template>
 
 <script>
-import { uuid } from 'vue-uuid'
+import { uuid } from "vue-uuid";
 export default {
   data: () => ({
     //dialogs for deletion
@@ -200,35 +203,16 @@ export default {
 
   methods: {
     initialize() {
-      this.myevents = [
-        {
-          strId: uuid.v1(),
-          strEvent: "Job 1 Submit",
-          dtmDate: "2019-01-30",
-          intElapsed: 100,
-        },
-        {
-          strId: uuid.v1(),
-          strEvent: "Job 1 Reject",
-          dtmDate: "2019-01-31",
-          intElapsed: 30,
-        },
-        {
-          strId: uuid.v1(),
-          strEvent: "Job 2 Other",
-          dtmDate: "2020-01-25",
-          intElapsed: 5,
-        },
-      ];
-
+      this.myevents = [];
       this.recalculateElapsed();
-
     },
 
     //recalculates all elapsed
     recalculateElapsed() {
       for (var x = 0; x < this.myevents.length; x++) {
-        this.myevents[x].intElapsed = this.timeElapsed(this.myevents[x].dtmDate);
+        this.myevents[x].intElapsed = this.timeElapsed(
+          this.myevents[x].dtmDate
+        );
       }
     },
 
@@ -259,8 +243,8 @@ export default {
 
     //deletes all items
     deleteAll() {
-        this.clearEvents();
-        this.delete_diag = false;
+      this.clearEvents();
+      this.delete_diag = false;
     },
 
     //clears event container
