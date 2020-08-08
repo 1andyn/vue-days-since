@@ -1,6 +1,7 @@
 import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
+import auth from "../auth"
 import { Auth0Plugin } from "./auth";
 import HighlightJs from "./directives/highlight";
 
@@ -17,6 +18,9 @@ Vue.config.productionTip = false;
 Vue.use(Auth0Plugin, {
   domain,
   clientId,
+  responseType: auth.responseType,
+  audience: auth.audience_dev,
+  scope: auth.scope,
   onRedirectCallback: appState => {
     router.push(
       appState && appState.targetUrl
