@@ -19,7 +19,7 @@ Vue.use(Auth0Plugin, {
   domain,
   clientId,
   responseType: auth.responseType,
-  audience: auth.audience_dev,
+  audience: auth.audience,
   scope: auth.scope,
   onRedirectCallback: appState => {
     router.push(

@@ -1,6 +1,9 @@
 <template>
 <body>
   <div>
+    <v-alert :value="!$auth.user.email_verified" color="#FFFF99" icon="warning">
+      <span class ="alert-unverified"><b>Email address</b> is <b>unverified</b>, Please check your inbox! </span>
+    </v-alert>
     <v-data-table
       :headers="headers"
       :items="myevents"
@@ -9,7 +12,8 @@
       :sortDesc="[false, true]"
     >
       <template slot="no-data">
-        <v-alert :value="true" color="white" icon="info">You don't have any days tracked 😔</v-alert>
+        <v-alert :value="loading" color="white" icon="info">Loading data from the cloud ☁️</v-alert>
+        <v-alert :value="!loading" color="white" icon="info">You don't have any days tracked 😔</v-alert>
       </template>
       <template v-slot:item.intElapsed="{ item }">
         <v-chip :color="getColor(item.intElapsed)" dark>{{ item.intElapsed }}</v-chip>
@@ -131,8 +135,13 @@
 
 <script>
 import { uuid } from "vue-uuid";
+import axios from "axios";
+
 export default {
   data: () => ({
+    //apis storage
+    loading: true,
+
     //dialogs for deletion
     delete_diag_sp: false,
     delete_diag: false,
@@ -202,9 +211,75 @@ export default {
   },
 
   methods: {
+    //data sync api calls
+    async api_retrieve_events() {
+      // Get the access token from the auth wrapper
+      const token = await this.$auth.getTokenSilently();
+
+      // Use Axios to make a call to the API
+      await axios.get("http://localhost:5000/retrieve", {
+          headers: { Authorization: `Bearer ${token}` },
+        }).then(response => {
+          this.myevents = response.data.message;
+          this.recalculateElapsed();
+          this.loading = false; //flip loading boolean
+      }).catch(() => {
+            this.loading = false;
+      }
+      );
+
+    },
+
+    async api_add_event(event) {
+      // Get the access token from the auth wrapper
+      const token = await this.$auth.getTokenSilently();
+      const event_data = {
+        strId: event.strId,
+        strEvent: event.strEvent,
+        dtmDate: event.dtmDate,
+      };
+
+      // Use Axios to make a call to the API
+      await axios.put(
+        "http://localhost:5000/add",
+        event_data,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+    },
+
+    async api_del_event(event) {
+      // Get the access token from the auth wrapper
+      const token = await this.$auth.getTokenSilently();
+
+      // Use Axios to make a call to the API
+      await axios.delete("http://localhost:5000/delsp", {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { strId: event.strId },
+      });
+
+    },
+
+    async api_del_all() {
+      // Get the access token from the auth wrapper
+      const token = await this.$auth.getTokenSilently();
+
+      // Use Axios to make a call to the API
+      await axios.delete("http://localhost:5000/delete/all", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+    },
+    //data sync api calls
+
+   //sync all - called when user verifies emails after adding stuff
+
+
+
+
+    // list initialization
     initialize() {
-      this.myevents = [];
-      this.recalculateElapsed();
+      this.api_retrieve_events();
     },
 
     //recalculates all elapsed
@@ -236,6 +311,7 @@ export default {
 
     //deletes selected item
     deleteItem(item) {
+      this.api_del_event(item);
       const index = this.myevents.indexOf(item);
       this.myevents.splice(index, 1);
       this.delete_diag_sp = false;
@@ -243,6 +319,7 @@ export default {
 
     //deletes all items
     deleteAll() {
+      this.api_del_all();
       this.clearEvents();
       this.delete_diag = false;
     },
@@ -274,6 +351,7 @@ export default {
         this.editedItem.strId = uuid.v1(); //generate a unique ID
         this.myevents.push(this.editedItem);
       }
+      this.api_add_event(this.editedItem); //attempts update on atlas
       this.close();
     },
 

@@ -32,7 +32,7 @@
                 id="qsLoginBtn"
                 class="btn btn-primary btn-margin"
                 @click.prevent="login"
-              >Login</button>
+              >Login / Register</button>
             </li>
 
             <li class="nav-item dropdown" v-if="$auth.isAuthenticated">
