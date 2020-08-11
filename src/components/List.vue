@@ -217,7 +217,7 @@ export default {
       const token = await this.$auth.getTokenSilently();
 
       // Use Axios to make a call to the API
-      await axios.get("http://localhost:5000/retrieve", {
+      await axios.get("https://vds-db.andywork.dev/retrieve", {
           headers: { Authorization: `Bearer ${token}` },
         }).then(response => {
           this.myevents = response.data.message;
@@ -241,7 +241,7 @@ export default {
 
       // Use Axios to make a call to the API
       await axios.put(
-        "http://localhost:5000/add",
+        "https://vds-db.andywork.dev/add",
         event_data,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -253,7 +253,7 @@ export default {
       const token = await this.$auth.getTokenSilently();
 
       // Use Axios to make a call to the API
-      await axios.delete("http://localhost:5000/delsp", {
+      await axios.delete("https://vds-db.andywork.dev/delsp", {
         headers: { Authorization: `Bearer ${token}` },
         data: { strId: event.strId },
       });
@@ -265,7 +265,7 @@ export default {
       const token = await this.$auth.getTokenSilently();
 
       // Use Axios to make a call to the API
-      await axios.delete("http://localhost:5000/delete/all", {
+      await axios.delete("https://vds-db.andywork.dev/delete/all", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
