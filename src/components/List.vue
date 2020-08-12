@@ -278,7 +278,6 @@ export default {
       //sort by elapsed time
       data.sort((a,b)=> a.intElapsed - b.intElapsed);
       this.myevents = data;
-
     },
 
     //data sync api calls
@@ -345,7 +344,6 @@ export default {
     initialize() {
       this.set_api_end();
       this.api_retrieve_events();
-      this.sort_events();
     },
 
     //recalculates all elapsed
@@ -359,6 +357,7 @@ export default {
 
     //
     update_dashboard() {
+      this.sort_events();
       this.update_db_max();
       this.update_db_avg();
       this.update_db_min();
@@ -428,7 +427,6 @@ export default {
       const index = this.myevents.indexOf(item);
       this.myevents.splice(index, 1);
       this.delete_diag_sp = false;
-      this.sort_events(); //keep it sorted on deletion
     },
 
     //deletes all items
@@ -466,7 +464,6 @@ export default {
         this.myevents.push(this.editedItem);
       }
       this.api_add_event(this.editedItem); //attempts update on atlas
-      this.sort_events(); //keep it sorted after insert or edit
       this.close();
     },
 
