@@ -345,6 +345,7 @@ export default {
     initialize() {
       this.set_api_end();
       this.api_retrieve_events();
+      this.sort_events();
     },
 
     //recalculates all elapsed
