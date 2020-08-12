@@ -15,7 +15,7 @@
         <v-alert :value="loading" color="white" icon="info">Loading data from the cloud ☁️</v-alert>
         <v-alert :value="!loading" color="white" icon="info">You don't have any days tracked 😔</v-alert>
       </template>
-      <template v-slot:item.intElapsed="{ item }">
+      <template v-slot:[`item.intElapsed`]="{ item }">
         <v-chip :color="getColor(item.intElapsed)" dark>{{ item.intElapsed }}</v-chip>
       </template>
       <template v-slot:top>
@@ -112,7 +112,7 @@
       <!-- This section is for the editing / add new item modal -->
 
       <!-- Buttons for editing -->
-      <template v-slot:item.actions="{ item }">
+      <template v-slot:[`item.actions`]="{ item }">
         <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
         <v-icon small @click="delete_diag_sp=true">mdi-delete</v-icon>
         <v-dialog v-model="delete_diag_sp" max-width="290">
