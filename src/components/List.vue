@@ -291,6 +291,7 @@ export default {
         }).then(response => {
           this.myevents = response.data.message;
           this.recalculateElapsed();
+          this.sort_events();
           this.loading = false; //flip loading boolean
       }).catch(() => {
             this.loading = false;
@@ -357,7 +358,6 @@ export default {
 
     //
     update_dashboard() {
-      this.sort_events();
       this.update_db_max();
       this.update_db_avg();
       this.update_db_min();
@@ -426,6 +426,7 @@ export default {
       this.api_del_event(item);
       const index = this.myevents.indexOf(item);
       this.myevents.splice(index, 1);
+      this.sort_events();
       this.delete_diag_sp = false;
     },
 
@@ -464,6 +465,7 @@ export default {
         this.myevents.push(this.editedItem);
       }
       this.api_add_event(this.editedItem); //attempts update on atlas
+      this.sort_events();
       this.close();
     },
 
