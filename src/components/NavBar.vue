@@ -25,6 +25,9 @@
             <li class="nav-item" v-if="$auth.isAuthenticated">
               <router-link to="/settings" class="nav-link">Settings</router-link>
             </li>
+            <li class="nav-item" v-if="$auth.isAuthenticated">
+              <router-link to="/archive" class="nav-link">Archive</router-link>
+            </li>
           </ul>
           <ul class="navbar-nav d-none d-md-block">
             <li v-if="!$auth.isAuthenticated && !$auth.loading" class="nav-item">

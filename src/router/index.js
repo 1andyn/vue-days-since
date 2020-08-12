@@ -38,6 +38,12 @@ const router = new Router({
       name: "settings",
       component: Settings,
       beforeEnter: authGuard
+    },
+    {
+      path: "/archive",
+      name: "archive",
+      component: Archive,
+      beforeEnter: authGuard
     }
   ]
 });
