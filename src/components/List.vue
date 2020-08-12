@@ -1,5 +1,45 @@
 <template>
 <body>
+      <!-- Dashboard -->
+  <div>
+    <v-row>
+    <v-col>
+      <v-card
+          class="mx-auto card-style"
+          max-width="395">
+            <v-list-item-content>
+              <div class="mb-1 card-overlist">Oldest Elapsed</div>
+              <v-list-item-title class="headline mb-1 card-right">{{db_oldest}}</v-list-item-title>
+              <v-list-item-subtitle class="card-sub">{{db_oldest_name}}</v-list-item-subtitle>
+            </v-list-item-content>
+
+        </v-card>
+      </v-col>
+      <v-col>
+        <v-card
+            class="mx-auto card-style"
+            max-width="395">
+              <v-list-item-content>
+                <div class="mb-1 card-overlist">Average Elapsed</div>
+                <v-list-item-title class="headline mb-1 card-right">{{db_average}}</v-list-item-title>
+                <v-list-item-subtitle class="card-sub">{{db_average_name}}</v-list-item-subtitle>
+              </v-list-item-content>
+        </v-card>
+      </v-col>
+      <v-col>
+        <v-card
+          class="mx-auto card-style"
+          max-width="395">
+            <v-list-item-content>
+              <div class="mb-1 card-overlist">Newest Elapsed</div>
+              <v-list-item-title class="headline mb-1 card-right">{{db_newest}}</v-list-item-title>
+              <v-list-item-subtitle class="card-sub">{{db_newest_name}}</v-list-item-subtitle>
+            </v-list-item-content>
+        </v-card>
+      </v-col>
+    </v-row>
+  </div>
+      <!-- Table Section -->
   <div>
     <v-alert :value="!$auth.user.email_verified" color="#FFFF99" icon="warning">
       <span class ="alert-unverified"><b>Email address</b> is <b>unverified</b>, Please check your inbox! </span>
@@ -137,13 +177,20 @@
 import { uuid } from "vue-uuid";
 import axios from "axios";
 import auth_setting from "../../auth"
-import auth from '../../auth';
 
 export default {
   data: () => ({
     //apis storage
     loading: true,
     api_endpt: "",
+
+    //dashboard
+    db_oldest: 0,
+    db_oldest_name: "",
+    db_average: 0,
+    db_average_name: "",
+    db_newest: 0,
+    db_newest_name: "",
 
     //dialogs for deletion
     delete_diag_sp: false,
@@ -207,6 +254,14 @@ export default {
     dialog(val) {
       val || this.close();
     },
+
+    myevents: {
+      handler: function () {
+        this.update_dashboard();
+      }
+    },
+    deep: true
+
   },
 
   created() {
@@ -216,6 +271,14 @@ export default {
   methods: {
     set_api_end() {
       this.api_endpt = auth_setting.dev ? auth_setting.audience_dev : auth_setting.audience_dev;
+    },
+
+    sort_events() {
+      var data = this.myevents;
+      //sort by elapsed time
+      data.sort((a,b)=> a.intElapsed - b.intElapsed);
+      this.myevents = data;
+
     },
 
     //data sync api calls
@@ -293,6 +356,53 @@ export default {
       }
     },
 
+    //
+    update_dashboard() {
+      this.update_db_max();
+      this.update_db_avg();
+      this.update_db_min();
+    },
+
+    update_db_max() {
+      this.db_oldest = this.myevents[this.myevents.length - 1].intElapsed;
+      this.db_oldest_name = this.myevents[this.myevents.length - 1].strEvent;
+    },
+
+    update_db_avg() {
+      var total = 0;
+      for(var x = 0; x < this.myevents.length; x++) {
+        total += this.myevents[x].intElapsed;
+      }
+
+      this.db_average = parseInt(total / this.myevents.length);
+      var avg_name = this.db_binary_search(this.db_average);
+      this.db_average_name = avg_name === "" ? "No events at average" : avg_name;
+    },
+
+    update_db_min() {
+      this.db_newest = this.myevents[0].intElapsed;
+      this.db_newest_name = this.myevents[0].strEvent;
+    },
+
+    db_binary_search(elapsed) {
+      
+      var data = this.myevents;
+      var left = 0, right = data.length - 1;
+      while(left < right) {
+        var mid = left + (right - left)/2;
+        if(data[mid] === elapsed) {
+          return data[mid].strEvent;
+        } else if(data[mid] > elapsed) {
+          right = mid - 1;
+        } else {
+          left = mid + 1;
+        }
+      }
+
+      return "";
+
+    },
+
     //calculates time elapsed
     timeElapsed(date) {
       var now = new Date();
@@ -317,6 +427,7 @@ export default {
       const index = this.myevents.indexOf(item);
       this.myevents.splice(index, 1);
       this.delete_diag_sp = false;
+      this.sort_events(); //keep it sorted on deletion
     },
 
     //deletes all items
@@ -354,6 +465,7 @@ export default {
         this.myevents.push(this.editedItem);
       }
       this.api_add_event(this.editedItem); //attempts update on atlas
+      this.sort_events(); //keep it sorted after insert or edit
       this.close();
     },
 

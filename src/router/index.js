@@ -4,6 +4,7 @@ import Home from "../views/Home.vue";
 import List from "../views/List.vue";
 import Profile from "../views/Profile.vue";
 import Settings from "../views/Settings.vue";
+import Archive from "../views/Archive.vue";
 import { authGuard } from "../auth";
 
 

@@ -333,6 +333,24 @@ h1 {
 	font-weight: bold;
 }
 
+.card-style {
+	padding: 10px;
+	padding-right: 30px;
+}
+
+.card-overlist {
+	font-weight: 600;
+}
+
+.card-sub {
+	text-align: right;
+}
+
+.card-right {
+	text-align: right;
+
+}
+
 .ctr-img {
 	display: block;
 	margin-left: auto;
