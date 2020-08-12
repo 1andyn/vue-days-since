@@ -136,11 +136,14 @@
 <script>
 import { uuid } from "vue-uuid";
 import axios from "axios";
+import auth_setting from "../../auth"
+import auth from '../../auth';
 
 export default {
   data: () => ({
     //apis storage
     loading: true,
+    api_endpt: "",
 
     //dialogs for deletion
     delete_diag_sp: false,
@@ -211,13 +214,17 @@ export default {
   },
 
   methods: {
+    set_api_end() {
+      this.api_endpt = auth_setting.dev ? auth_setting.audience_dev : auth_setting.audience_dev;
+    },
+
     //data sync api calls
     async api_retrieve_events() {
       // Get the access token from the auth wrapper
       const token = await this.$auth.getTokenSilently();
 
       // Use Axios to make a call to the API
-      await axios.get("https://vds-db.andywork.dev/retrieve", {
+      await axios.get(this.api_endpt + "/retrieve", {
           headers: { Authorization: `Bearer ${token}` },
         }).then(response => {
           this.myevents = response.data.message;
@@ -240,8 +247,7 @@ export default {
       };
 
       // Use Axios to make a call to the API
-      await axios.put(
-        "https://vds-db.andywork.dev/add",
+      await axios.put(this.api_endpt + "/add",
         event_data,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -253,7 +259,7 @@ export default {
       const token = await this.$auth.getTokenSilently();
 
       // Use Axios to make a call to the API
-      await axios.delete("https://vds-db.andywork.dev/delsp", {
+      await axios.delete(this.api_endpt + "/delsp", {
         headers: { Authorization: `Bearer ${token}` },
         data: { strId: event.strId },
       });
@@ -265,20 +271,16 @@ export default {
       const token = await this.$auth.getTokenSilently();
 
       // Use Axios to make a call to the API
-      await axios.delete("https://vds-db.andywork.dev/delete/all", {
+      await axios.delete(this.api_endpt + "/delete/all", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
     },
     //data sync api calls
 
-   //sync all - called when user verifies emails after adding stuff
-
-
-
-
     // list initialization
     initialize() {
+      this.set_api_end();
       this.api_retrieve_events();
     },
 
