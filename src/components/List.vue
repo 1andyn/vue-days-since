@@ -270,7 +270,7 @@ export default {
 
   methods: {
     set_api_end() {
-      this.api_endpt = auth_setting.dev ? auth_setting.audience_dev : auth_setting.audience_dev;
+      this.api_endpt = auth_setting.dev ? auth_setting.audience_dev : auth_setting.audience;
     },
 
     sort_events() {
