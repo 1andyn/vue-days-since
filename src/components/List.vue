@@ -94,6 +94,17 @@
                   </v-card-actions>
                 </v-card>
               </v-dialog>
+              <v-dialog v-model="arch_diag_sp" max-width="290" :retain-focus="false">
+                <v-card>
+                  <v-card-title class="headline">Archive this event</v-card-title>
+                  <v-card-text>Are you sure you want to archive this item?</v-card-text>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="red darken-1" text @click="resetArchive()">No</v-btn>
+                    <v-btn color="green darken-1" text @click="archiveItem()">Yes!</v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
               <v-btn
                 color="primary"
                 dark
@@ -164,6 +175,7 @@
       <!-- Buttons for editing -->
       <template v-slot:[`item.actions`]="{ item }">
         <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
+        <v-icon small class="mr-2" @click="archItemStage(item)">mdi-archive</v-icon>
         <v-icon small @click="deleteItemStage(item)">mdi-delete</v-icon>
       </template>
       <!-- Buttons for editing -->
@@ -194,6 +206,9 @@ export default {
     //dialogs for deletion
     delete_diag_sp: false,
     delete_diag: false,
+
+    //dialog for archive
+    arch_diag_sp: false,
 
     //dialog window for adding/editing
     dialog: false,
@@ -314,7 +329,22 @@ export default {
         event_data,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+    },
 
+    async api_arch_event(event) {
+      // Get the access token from the auth wrapper
+      const token = await this.$auth.getTokenSilently();
+      const event_data = {
+        strId: event.strId,
+        strEvent: event.strEvent,
+        dtmDate: event.dtmDate,
+      };
+
+      // Use Axios to make a call to the API
+      await axios.put(this.api_endpt + "/arch",
+        event_data,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
     },
 
     async api_del_event(event) {
@@ -367,6 +397,7 @@ export default {
       if(this.myevents.length === 0) {
         this.db_oldest = 0;
         this.db_oldest_name = "There are no events";
+        return;
       }
       
       var max = 0;
@@ -387,7 +418,7 @@ export default {
         total += this.myevents[x].intElapsed;
       }
 
-      this.db_average = parseInt(total / this.myevents.length);
+      this.db_average = this.myevents.length === 0 ? 0 : parseInt(total / this.myevents.length);
       this.db_total = this.myevents.length;
     },
 
@@ -395,6 +426,7 @@ export default {
       if(this.myevents.length === 0) {
         this.db_newest = 0;
         this.db_newest_name = "There are no events";
+        return;
       }
 
       var min = 2147483647; //max integer value
@@ -435,11 +467,33 @@ export default {
       this.delete_diag_sp = true; //show delete dialog
     },
 
+        //set up dialog and set index and deletion
+    archItemStage(item) {
+      this.editedIndex = this.myevents.indexOf(item);
+      this.editedItem = Object.assign({}, this.myevents[this.editedIndex]);
+      this.arch_diag_sp = true; //show delete dialog
+    },
+
     //reset delete item, closes dialog {
     resetDelete() {
       this.deleteIndex = -1; //reset index
       this.deletingItem = Object.assign({}, this.defaultItem); //reset item
       this.delete_diag_sp = false;
+    },
+
+    //reset delete item, closes dialog {
+    resetArchive() {
+      this.editedIndex = -1; //reset index
+      this.editedItem = Object.assign({}, this.defaultItem); //reset item
+      this.arch_diag_sp = false;
+    },
+
+    archiveItem() {
+      //insert item into archive (cloud, which will also delete it from main)
+      this.api_arch_event(this.myevents[this.editedIndex]);
+      //delete item physicall in table
+      this.myevents.splice(this.editedIndex, 1); //delete locally
+      this.resetArchive();
     },
 
     //deletes selected item
@@ -451,8 +505,11 @@ export default {
 
     //deletes all items
     deleteAll() {
-      this.api_del_all();
-      this.clearEvents();
+      if(this.myevents.length !== 0) {
+        this.api_del_all();
+        this.clearEvents();
+      }
+        
       this.delete_diag = false;
     },
 
