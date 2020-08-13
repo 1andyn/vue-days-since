@@ -13,19 +13,19 @@
               <v-list-item-subtitle class="card-sub">{{db_oldest_name}}</v-list-item-subtitle>
             </v-list-item-content>
 
-        </v-card>
-      </v-col>
-      <v-col>
-        <v-card
-            class="mx-auto card-style"
-            max-width="395">
-              <v-list-item-content>
-                <div class="mb-1 card-overlist">Average Elapsed</div>
-                <v-list-item-title class="headline mb-1 card-right">{{db_average}}{{" " + interval + "s"}}</v-list-item-title>
-                <v-list-item-subtitle class="card-sub">Total events: {{db_total}}</v-list-item-subtitle>
-              </v-list-item-content>
-        </v-card>
-      </v-col>
+      </v-card>
+    </v-col>
+    <v-col>
+      <v-card
+        class="mx-auto card-style"
+        max-width="395">
+            <v-list-item-content>
+              <div class="mb-1 card-overlist">Average Elapsed</div>
+              <v-list-item-title class="headline mb-1 card-right">{{db_average}}{{" " + interval + "s"}}</v-list-item-title>
+              <v-list-item-subtitle class="card-sub">Total events: {{db_total}}</v-list-item-subtitle>
+            </v-list-item-content>
+      </v-card>
+    </v-col>
       <v-col>
         <v-card
           class="mx-auto card-style"
@@ -72,7 +72,7 @@
                 width="150"
                 @click="delete_diag = true"
               >Delete All</v-btn>
-              <v-dialog v-model="delete_diag" max-width="290">
+              <v-dialog v-model="delete_diag" max-width="290" :retain-focus="false">
                 <v-card>
                   <v-card-title class="headline">Delete all events</v-card-title>
                   <v-card-text>Are you sure you want to delete everything?</v-card-text>
@@ -80,6 +80,17 @@
                     <v-spacer></v-spacer>
                     <v-btn color="red darken-1" text @click="delete_diag = false">No</v-btn>
                     <v-btn color="green darken-1" text @click="deleteAll()">Yes!</v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+              <v-dialog v-model="delete_diag_sp" max-width="290" :retain-focus="false">
+                <v-card>
+                  <v-card-title class="headline">Delete this event</v-card-title>
+                  <v-card-text>Are you sure you want to delete this item?</v-card-text>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="red darken-1" text @click="resetDelete()">No</v-btn>
+                    <v-btn color="green darken-1" text @click="deleteItem()">Yes!</v-btn>
                   </v-card-actions>
                 </v-card>
               </v-dialog>
@@ -150,22 +161,10 @@
         </v-toolbar>
       </template>
       <!-- This section is for the editing / add new item modal -->
-
       <!-- Buttons for editing -->
       <template v-slot:[`item.actions`]="{ item }">
         <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
-        <v-icon small @click="delete_diag_sp=true">mdi-delete</v-icon>
-        <v-dialog v-model="delete_diag_sp" max-width="290">
-          <v-card>
-            <v-card-title class="headline">Delete this event</v-card-title>
-            <v-card-text>Are you sure you want to delete this item?</v-card-text>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="red darken-1" text @click="delete_diag_sp = false">No</v-btn>
-              <v-btn color="green darken-1" text @click="deleteItem(item)">Yes!</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
+        <v-icon small @click="deleteItemStage(item)">mdi-delete</v-icon>
       </template>
       <!-- Buttons for editing -->
     </v-data-table>
@@ -186,11 +185,11 @@ export default {
 
     //dashboard
     db_oldest: 0,
-    db_oldest_name: "",
+    db_oldest_name: "Loading...",
     db_average: 0,
     db_total: 0,
     db_newest: 0,
-    db_newest_name: "",
+    db_newest_name: "Loading...",
 
     //dialogs for deletion
     delete_diag_sp: false,
@@ -226,6 +225,15 @@ export default {
 
     //Index for Item being edited / modified
     editedIndex: -1,
+    deleteIndex: - 1,
+
+    //item to be deleted
+    deletingItem: {
+      strId: "",
+      strEvent: "",
+      dtmDate: new Date().toISOString().substr(0, 10),
+      intElapsed: 0,
+    },
 
     //Edited Item Props
     editedItem: {
@@ -258,10 +266,10 @@ export default {
     myevents: {
       handler: function () {
         this.update_dashboard();
-      }
+      },
+      deep: true
     },
-    deep: true
-
+    
   },
 
   created() {
@@ -271,13 +279,6 @@ export default {
   methods: {
     set_api_end() {
       this.api_endpt = auth_setting.dev ? auth_setting.audience_dev : auth_setting.audience;
-    },
-
-    sort_events() {
-      var data = this.myevents;
-      //sort by elapsed time
-      data.sort((a,b)=> a.intElapsed - b.intElapsed);
-      this.myevents = data;
     },
 
     //data sync api calls
@@ -291,7 +292,6 @@ export default {
         }).then(response => {
           this.myevents = response.data.message;
           this.recalculateElapsed();
-          this.sort_events();
           this.loading = false; //flip loading boolean
       }).catch(() => {
             this.loading = false;
@@ -364,8 +364,21 @@ export default {
     },
 
     update_db_max() {
-      this.db_oldest = this.myevents[this.myevents.length - 1].intElapsed;
-      this.db_oldest_name = this.myevents[this.myevents.length - 1].strEvent;
+      if(this.myevents.length === 0) {
+        this.db_oldest = 0;
+        this.db_oldest_name = "There are no events";
+      }
+      
+      var max = 0;
+      var event = this.myevents[0].strEvent;
+      for(var x = 0; x < this.myevents.length; x++) {
+        if(this.myevents[x].intElapsed > max) {
+            max = this.myevents[x].intElapsed;
+            event = this.myevents[x].strEvent;
+        }
+      }
+      this.db_oldest = max;
+      this.db_oldest_name = event;
     },
 
     update_db_avg() {
@@ -375,32 +388,26 @@ export default {
       }
 
       this.db_average = parseInt(total / this.myevents.length);
-      //var avg_name = this.db_binary_search(this.db_average);
       this.db_total = this.myevents.length;
     },
 
     update_db_min() {
-      this.db_newest = this.myevents[0].intElapsed;
-      this.db_newest_name = this.myevents[0].strEvent;
-    },
+      if(this.myevents.length === 0) {
+        this.db_newest = 0;
+        this.db_newest_name = "There are no events";
+      }
 
-    db_binary_search(elapsed) {
-      
-      var data = this.myevents;
-      var left = 0, right = data.length - 1;
-      while(left < right) {
-        var mid = left + (right - left)/2;
-        if(data[mid] === elapsed) {
-          return data[mid].strEvent;
-        } else if(data[mid] > elapsed) {
-          right = mid - 1;
-        } else {
-          left = mid + 1;
+      var min = 2147483647; //max integer value
+      var event = this.myevents[0].strEvent;
+      for(var x = 0; x < this.myevents.length; x++) {
+        if(this.myevents[x].intElapsed < min) {
+            min = this.myevents[x].intElapsed;
+            event = this.myevents[x].strEvent;
         }
       }
 
-      return "";
-
+      this.db_newest = min;
+      this.db_newest_name = event;
     },
 
     //calculates time elapsed
@@ -421,13 +428,25 @@ export default {
       this.dialog = true;
     },
 
-    //deletes selected item
-    deleteItem(item) {
-      this.api_del_event(item);
-      const index = this.myevents.indexOf(item);
-      this.myevents.splice(index, 1);
-      this.sort_events();
+    //set up dialog and set index and deletion
+    deleteItemStage(item) {
+      this.deleteIndex = this.myevents.indexOf(item);
+      this.deletingItem = Object.assign({}, this.myevents[this.deleteIndex]);
+      this.delete_diag_sp = true; //show delete dialog
+    },
+
+    //reset delete item, closes dialog {
+    resetDelete() {
+      this.deleteIndex = -1; //reset index
+      this.deletingItem = Object.assign({}, this.defaultItem); //reset item
       this.delete_diag_sp = false;
+    },
+
+    //deletes selected item
+    deleteItem() {
+      this.api_del_event(this.deletingItem); //delete from cloud
+      this.myevents.splice(this.deleteIndex, 1); //delete locally
+      this.resetDelete(); //reset delete containers
     },
 
     //deletes all items
@@ -465,7 +484,6 @@ export default {
         this.myevents.push(this.editedItem);
       }
       this.api_add_event(this.editedItem); //attempts update on atlas
-      this.sort_events();
       this.close();
     },
 
