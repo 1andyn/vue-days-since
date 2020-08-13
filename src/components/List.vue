@@ -9,7 +9,7 @@
           max-width="395">
             <v-list-item-content>
               <div class="mb-1 card-overlist">Oldest Elapsed</div>
-              <v-list-item-title class="headline mb-1 card-right">{{db_oldest}}</v-list-item-title>
+              <v-list-item-title class="headline mb-1 card-right">{{db_oldest}}{{" " + interval + "s"}}</v-list-item-title>
               <v-list-item-subtitle class="card-sub">{{db_oldest_name}}</v-list-item-subtitle>
             </v-list-item-content>
 
@@ -21,8 +21,8 @@
             max-width="395">
               <v-list-item-content>
                 <div class="mb-1 card-overlist">Average Elapsed</div>
-                <v-list-item-title class="headline mb-1 card-right">{{db_average}}</v-list-item-title>
-                <v-list-item-subtitle class="card-sub">{{db_average_name}}</v-list-item-subtitle>
+                <v-list-item-title class="headline mb-1 card-right">{{db_average}}{{" " + interval + "s"}}</v-list-item-title>
+                <v-list-item-subtitle class="card-sub">Total events: {{db_total}}</v-list-item-subtitle>
               </v-list-item-content>
         </v-card>
       </v-col>
@@ -32,7 +32,7 @@
           max-width="395">
             <v-list-item-content>
               <div class="mb-1 card-overlist">Newest Elapsed</div>
-              <v-list-item-title class="headline mb-1 card-right">{{db_newest}}</v-list-item-title>
+              <v-list-item-title class="headline mb-1 card-right">{{db_newest}}{{" " + interval + "s"}}</v-list-item-title>
               <v-list-item-subtitle class="card-sub">{{db_newest_name}}</v-list-item-subtitle>
             </v-list-item-content>
         </v-card>
@@ -188,7 +188,7 @@ export default {
     db_oldest: 0,
     db_oldest_name: "",
     db_average: 0,
-    db_average_name: "",
+    db_total: 0,
     db_newest: 0,
     db_newest_name: "",
 
@@ -375,8 +375,8 @@ export default {
       }
 
       this.db_average = parseInt(total / this.myevents.length);
-      var avg_name = this.db_binary_search(this.db_average);
-      this.db_average_name = avg_name === "" ? "No events at average" : avg_name;
+      //var avg_name = this.db_binary_search(this.db_average);
+      this.db_total = this.myevents.length;
     },
 
     update_db_min() {
