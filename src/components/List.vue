@@ -548,6 +548,7 @@ export default {
     getColor(elapse) {
       if (elapse > 30) return "red";
       else if (elapse > 14) return "orange";
+      else if (elapse < 0) return "blue";
       else return "green";
     },
   },
