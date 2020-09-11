@@ -151,7 +151,7 @@ export default {
       const token = await this.$auth.getTokenSilently();
 
       // Use Axios to make a call to the API
-      await axios.get(this.apiEndpoint + this.apiArchiveEventsResource, {
+      await axios.get(this.apiEndpoint + apiArchiveEventsResource, {
           headers: { Authorization: `Bearer ${token}` },
         }).then(response => {
           this.myevents = response.data.message;
@@ -169,7 +169,7 @@ export default {
       const token = await this.$auth.getTokenSilently();
 
       // Use Axios to make a call to the API
-      await axios.delete(this.apiEndpoint + this.apiArchiveEventResource, {
+      await axios.delete(this.apiEndpoint + apiArchiveEventResource, {
         headers: { Authorization: `Bearer ${token}` },
         data: { strId: event.strId },
       });
@@ -181,7 +181,7 @@ export default {
       const token = await this.$auth.getTokenSilently();
 
       // Use Axios to make a call to the API
-      await axios.delete(this.apiEndpoint + this.apiArchiveEventsResource, {
+      await axios.delete(this.apiEndpoint + apiArchiveEventsResource, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

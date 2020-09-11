@@ -306,7 +306,7 @@ export default {
       const token = await this.$auth.getTokenSilently();
 
       // Use Axios to make a call to the API
-      await axios.get(this.apiEndpoint + this.apiEventsResource, {
+      await axios.get(this.apiEndpoint + apiEventsResource, {
           headers: { Authorization: `Bearer ${token}` },
         }).then(response => {
           this.myevents = response.data.message;
@@ -329,7 +329,7 @@ export default {
       };
 
       // Use Axios to make a call to the API
-      await axios.put(this.apiEndpoint + this.apiEventResource,
+      await axios.put(this.apiEndpoint + apiEventResource,
         event_data,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -345,7 +345,7 @@ export default {
       };
 
       // Use Axios to make a call to the API
-      await axios.put(this.apiEndpoint + this.apiArchiveEventResource,
+      await axios.put(this.apiEndpoint + apiArchiveEventResource,
         event_data,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -356,7 +356,7 @@ export default {
       const token = await this.$auth.getTokenSilently();
 
       // Use Axios to make a call to the API
-      await axios.delete(this.apiEndpoint + this.apiEventResource, {
+      await axios.delete(this.apiEndpoint + apiEventResource, {
         headers: { Authorization: `Bearer ${token}` },
         data: { strId: event.strId },
       });
@@ -368,7 +368,7 @@ export default {
       const token = await this.$auth.getTokenSilently();
 
       // Use Axios to make a call to the API
-      await axios.delete(this.apiEndpoint + this.apiEventsResource, {
+      await axios.delete(this.apiEndpoint + apiEventsResource, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
