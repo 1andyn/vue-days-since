@@ -74,13 +74,16 @@
 
 <script>
 import axios from "axios";
-import auth_setting from "../../auth"
+import authSetting from "../../auth"
+
+const apiArchiveEventResource = "/Api/Archive/Event";
+const apiArchiveEventsResource = "/Api/Archive/Events";
 
 export default {
   data: () => ({
     //apis storage
     loading: true,
-    api_endpt: "",
+    apiEndpoint: "",
 
     //dialogs for deletion
     delete_diag_sp: false,
@@ -138,17 +141,17 @@ export default {
   },
 
   methods: {
-    set_api_end() {
-      this.api_endpt = auth_setting.dev ? auth_setting.audience_dev : auth_setting.audience;
+    setApiEnd() {
+      this.apiEndpoint = authSetting.dev ? authSetting.audience_dev : authSetting.audience;
     },
 
     //data sync api calls
-    async api_retrieve_events() {
+    async apiRetrieveArchive() {
       // Get the access token from the auth wrapper
       const token = await this.$auth.getTokenSilently();
 
       // Use Axios to make a call to the API
-      await axios.get(this.api_endpt + "/arch_retrieve", {
+      await axios.get(this.apiEndpoint + this.apiArchiveEventsResource, {
           headers: { Authorization: `Bearer ${token}` },
         }).then(response => {
           this.myevents = response.data.message;
@@ -161,24 +164,24 @@ export default {
 
     },
 
-    async api_del_event(event) {
+    async apiDelEvent(event) {
       // Get the access token from the auth wrapper
       const token = await this.$auth.getTokenSilently();
 
       // Use Axios to make a call to the API
-      await axios.delete(this.api_endpt + "/arch_delsp", {
+      await axios.delete(this.apiEndpoint + this.apiArchiveEventResource, {
         headers: { Authorization: `Bearer ${token}` },
         data: { strId: event.strId },
       });
 
     },
 
-    async api_del_all() {
+    async apiDelAll() {
       // Get the access token from the auth wrapper
       const token = await this.$auth.getTokenSilently();
 
       // Use Axios to make a call to the API
-      await axios.delete(this.api_endpt + "/arch_delete/all", {
+      await axios.delete(this.apiEndpoint + this.apiArchiveEventsResource, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -187,8 +190,8 @@ export default {
 
     // list initialization
     initialize() {
-      this.set_api_end();
-      this.api_retrieve_events();
+      this.setApiEnd();
+      this.apiRetrieveArchive();
     },
 
     //recalculates all elapsed
@@ -234,7 +237,7 @@ export default {
 
     //deletes selected item
     deleteItem() {
-      this.api_del_event(this.deletingItem); //delete from cloud
+      this.apiDelEvent(this.deletingItem); //delete from cloud
       this.myevents.splice(this.deleteIndex, 1); //delete locally
       this.resetDelete(); //reset delete containers
     },
@@ -242,7 +245,7 @@ export default {
     //deletes all items
     deleteAll() {
       if(this.myevents.length !== 0) {
-        this.api_del_all();
+        this.apiDelAll();
         this.clearEvents();
       }
       this.delete_diag = false;
