@@ -9,8 +9,8 @@
           max-width="395">
             <v-list-item-content>
               <div class="mb-1 card-overlist">Oldest Elapsed</div>
-              <v-list-item-title class="headline mb-1 card-right">{{db_oldest}}{{" " + interval + "s"}}</v-list-item-title>
-              <v-list-item-subtitle class="card-sub">{{db_oldest_name}}</v-list-item-subtitle>
+              <v-list-item-title class="headline mb-1 card-right">{{dbOldest}}{{" " + interval + "s"}}</v-list-item-title>
+              <v-list-item-subtitle class="card-sub">{{dbOldestName}}</v-list-item-subtitle>
             </v-list-item-content>
 
       </v-card>
@@ -21,8 +21,8 @@
         max-width="395">
             <v-list-item-content>
               <div class="mb-1 card-overlist">Average Elapsed</div>
-              <v-list-item-title class="headline mb-1 card-right">{{db_average}}{{" " + interval + "s"}}</v-list-item-title>
-              <v-list-item-subtitle class="card-sub">Total events: {{db_total}}</v-list-item-subtitle>
+              <v-list-item-title class="headline mb-1 card-right">{{dbAverage}}{{" " + interval + "s"}}</v-list-item-title>
+              <v-list-item-subtitle class="card-sub">Total events: {{dbTotal}}</v-list-item-subtitle>
             </v-list-item-content>
       </v-card>
     </v-col>
@@ -32,8 +32,8 @@
           max-width="395">
             <v-list-item-content>
               <div class="mb-1 card-overlist">Newest Elapsed</div>
-              <v-list-item-title class="headline mb-1 card-right">{{db_newest}}{{" " + interval + "s"}}</v-list-item-title>
-              <v-list-item-subtitle class="card-sub">{{db_newest_name}}</v-list-item-subtitle>
+              <v-list-item-title class="headline mb-1 card-right">{{dbNewest}}{{" " + interval + "s"}}</v-list-item-title>
+              <v-list-item-subtitle class="card-sub">{{dbNewestName}}</v-list-item-subtitle>
             </v-list-item-content>
         </v-card>
       </v-col>
@@ -70,20 +70,20 @@
                 dark
                 class="mb-2 ds-btn"
                 width="150"
-                @click="delete_diag = true"
+                @click="deleteDiag = true"
               >Delete All</v-btn>
-              <v-dialog v-model="delete_diag" max-width="290" :retain-focus="false">
+              <v-dialog v-model="deleteDiag" max-width="290" :retain-focus="false">
                 <v-card>
                   <v-card-title class="headline">Delete all events</v-card-title>
                   <v-card-text>Are you sure you want to delete everything?</v-card-text>
                   <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="red darken-1" text @click="delete_diag = false">No</v-btn>
+                    <v-btn color="red darken-1" text @click="deleteDiag = false">No</v-btn>
                     <v-btn color="green darken-1" text @click="deleteAll()">Yes!</v-btn>
                   </v-card-actions>
                 </v-card>
               </v-dialog>
-              <v-dialog v-model="delete_diag_sp" max-width="290" :retain-focus="false">
+              <v-dialog v-model="deleteDiagSp" max-width="290" :retain-focus="false">
                 <v-card>
                   <v-card-title class="headline">Delete this event</v-card-title>
                   <v-card-text>Are you sure you want to delete this item?</v-card-text>
@@ -94,7 +94,7 @@
                   </v-card-actions>
                 </v-card>
               </v-dialog>
-              <v-dialog v-model="arch_diag_sp" max-width="290" :retain-focus="false">
+              <v-dialog v-model="archDiagSp" max-width="290" :retain-focus="false">
                 <v-card>
                   <v-card-title class="headline">Archive this event</v-card-title>
                   <v-card-text>Are you sure you want to archive this item?</v-card-text>
@@ -187,28 +187,32 @@
 <script>
 import { uuid } from "vue-uuid";
 import axios from "axios";
-import auth_setting from "../../auth"
+import authSetting from "../../auth"
+
+const apiEventResource = "/Api/Event";
+const apiEventsResource = "/Api/Events";
+const apiArchiveEventResource = "/Api/Archive/Event";
 
 export default {
   data: () => ({
     //apis storage
     loading: true,
-    api_endpt: "",
+    apiEndpoint: "",
 
     //dashboard
-    db_oldest: 0,
-    db_oldest_name: "Loading...",
-    db_average: 0,
-    db_total: 0,
-    db_newest: 0,
-    db_newest_name: "Loading...",
+    dbOldest: 0,
+    dbOldestName: "Loading...",
+    dbAverage: 0,
+    dbTotal: 0,
+    dbNewest: 0,
+    dbNewestName: "Loading...",
 
     //dialogs for deletion
-    delete_diag_sp: false,
-    delete_diag: false,
+    deleteDiagSp: false,
+    deleteDiag: false,
 
     //dialog for archive
-    arch_diag_sp: false,
+    archDiagSp: false,
 
     //dialog window for adding/editing
     dialog: false,
@@ -280,7 +284,7 @@ export default {
 
     myevents: {
       handler: function () {
-        this.update_dashboard();
+        this.updateDashboard();
       },
       deep: true
     },
@@ -292,17 +296,17 @@ export default {
   },
 
   methods: {
-    set_api_end() {
-      this.api_endpt = auth_setting.dev ? auth_setting.audience_dev : auth_setting.audience;
+    setApiEndpoint() {
+      this.apiEndpoint = authSetting.dev ? authSetting.audience_dev : authSetting.audience;
     },
 
     //data sync api calls
-    async api_retrieve_events() {
+    async apiRetrieveEvents() {
       // Get the access token from the auth wrapper
       const token = await this.$auth.getTokenSilently();
 
       // Use Axios to make a call to the API
-      await axios.get(this.api_endpt + "/retrieve", {
+      await axios.get(this.apiEndpoint + this.apiEventsResource, {
           headers: { Authorization: `Bearer ${token}` },
         }).then(response => {
           this.myevents = response.data.message;
@@ -315,7 +319,7 @@ export default {
 
     },
 
-    async api_add_event(event) {
+    async apiAddEvent(event) {
       // Get the access token from the auth wrapper
       const token = await this.$auth.getTokenSilently();
       const event_data = {
@@ -325,13 +329,13 @@ export default {
       };
 
       // Use Axios to make a call to the API
-      await axios.put(this.api_endpt + "/add",
+      await axios.put(this.apiEndpoint + this.apiEventResource,
         event_data,
         { headers: { Authorization: `Bearer ${token}` } }
       );
     },
 
-    async api_arch_event(event) {
+    async apiArchEvent(event) {
       // Get the access token from the auth wrapper
       const token = await this.$auth.getTokenSilently();
       const event_data = {
@@ -341,30 +345,30 @@ export default {
       };
 
       // Use Axios to make a call to the API
-      await axios.put(this.api_endpt + "/arch",
+      await axios.put(this.apiEndpoint + this.apiArchiveEventResource,
         event_data,
         { headers: { Authorization: `Bearer ${token}` } }
       );
     },
 
-    async api_del_event(event) {
+    async apiDelEvent(event) {
       // Get the access token from the auth wrapper
       const token = await this.$auth.getTokenSilently();
 
       // Use Axios to make a call to the API
-      await axios.delete(this.api_endpt + "/delsp", {
+      await axios.delete(this.apiEndpoint + this.apiEventResource, {
         headers: { Authorization: `Bearer ${token}` },
         data: { strId: event.strId },
       });
 
     },
 
-    async api_del_all() {
+    async apiDelAll() {
       // Get the access token from the auth wrapper
       const token = await this.$auth.getTokenSilently();
 
       // Use Axios to make a call to the API
-      await axios.delete(this.api_endpt + "/delete/all", {
+      await axios.delete(this.apiEndpoint + this.apiEventsResource, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -373,8 +377,8 @@ export default {
 
     // list initialization
     initialize() {
-      this.set_api_end();
-      this.api_retrieve_events();
+      this.setApiEndpoint();
+      this.apiRetrieveEvents();
     },
 
     //recalculates all elapsed
@@ -387,16 +391,16 @@ export default {
     },
 
     //
-    update_dashboard() {
-      this.update_db_max();
-      this.update_db_avg();
-      this.update_db_min();
+    updateDashboard() {
+      this.updateDbMax();
+      this.updateDbAvg();
+      this.updateDbMin();
     },
 
-    update_db_max() {
+    updateDbMax() {
       if(this.myevents.length === 0) {
-        this.db_oldest = 0;
-        this.db_oldest_name = "There are no events";
+        this.dbOldest = 0;
+        this.dbOldestName = "There are no events";
         return;
       }
       
@@ -408,24 +412,24 @@ export default {
             event = this.myevents[x].strEvent;
         }
       }
-      this.db_oldest = max;
-      this.db_oldest_name = event;
+      this.dbOldest = max;
+      this.dbOldestName = event;
     },
 
-    update_db_avg() {
+    updateDbAvg() {
       var total = 0;
       for(var x = 0; x < this.myevents.length; x++) {
         total += this.myevents[x].intElapsed;
       }
 
-      this.db_average = this.myevents.length === 0 ? 0 : parseInt(total / this.myevents.length);
-      this.db_total = this.myevents.length;
+      this.dbAverage = this.myevents.length === 0 ? 0 : parseInt(total / this.myevents.length);
+      this.dbTotal = this.myevents.length;
     },
 
-    update_db_min() {
+    updateDbMin() {
       if(this.myevents.length === 0) {
-        this.db_newest = 0;
-        this.db_newest_name = "There are no events";
+        this.dbNewest = 0;
+        this.dbNewestName = "There are no events";
         return;
       }
 
@@ -438,8 +442,8 @@ export default {
         }
       }
 
-      this.db_newest = min;
-      this.db_newest_name = event;
+      this.dbNewest = min;
+      this.dbNewestName = event;
     },
 
     //calculates time elapsed
@@ -464,33 +468,33 @@ export default {
     deleteItemStage(item) {
       this.deleteIndex = this.myevents.indexOf(item);
       this.deletingItem = Object.assign({}, this.myevents[this.deleteIndex]);
-      this.delete_diag_sp = true; //show delete dialog
+      this.deleteDiagSp = true; //show delete dialog
     },
 
         //set up dialog and set index and deletion
     archItemStage(item) {
       this.editedIndex = this.myevents.indexOf(item);
       this.editedItem = Object.assign({}, this.myevents[this.editedIndex]);
-      this.arch_diag_sp = true; //show delete dialog
+      this.archDiagSp = true; //show delete dialog
     },
 
     //reset delete item, closes dialog {
     resetDelete() {
       this.deleteIndex = -1; //reset index
       this.deletingItem = Object.assign({}, this.defaultItem); //reset item
-      this.delete_diag_sp = false;
+      this.deleteDiagSp = false;
     },
 
     //reset delete item, closes dialog {
     resetArchive() {
       this.editedIndex = -1; //reset index
       this.editedItem = Object.assign({}, this.defaultItem); //reset item
-      this.arch_diag_sp = false;
+      this.archDiagSp = false;
     },
 
     archiveItem() {
       //insert item into archive (cloud, which will also delete it from main)
-      this.api_arch_event(this.myevents[this.editedIndex]);
+      this.apiArchEvent(this.myevents[this.editedIndex]);
       //delete item physicall in table
       this.myevents.splice(this.editedIndex, 1); //delete locally
       this.resetArchive();
@@ -498,7 +502,7 @@ export default {
 
     //deletes selected item
     deleteItem() {
-      this.api_del_event(this.deletingItem); //delete from cloud
+      this.apiDelEvent(this.deletingItem); //delete from cloud
       this.myevents.splice(this.deleteIndex, 1); //delete locally
       this.resetDelete(); //reset delete containers
     },
@@ -506,11 +510,11 @@ export default {
     //deletes all items
     deleteAll() {
       if(this.myevents.length !== 0) {
-        this.api_del_all();
+        this.apiDelAll();
         this.clearEvents();
       }
         
-      this.delete_diag = false;
+      this.deleteDiag = false;
     },
 
     //clears event container
@@ -540,7 +544,7 @@ export default {
         this.editedItem.strId = uuid.v1(); //generate a unique ID
         this.myevents.push(this.editedItem);
       }
-      this.api_add_event(this.editedItem); //attempts update on atlas
+      this.apiAddEvent(this.editedItem); //attempts update on atlas
       this.close();
     },
 
